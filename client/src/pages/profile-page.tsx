@@ -45,6 +45,12 @@ export default function ProfilePage() {
       onClick: () => navigate("/balance")
     },
     {
+      icon: <GraduationCap className="h-5 w-5" />,
+      label: "Verificação de Estudante",
+      description: "Desconto de 50% para estudantes",
+      onClick: () => navigate("/student-verification")
+    },
+    {
       icon: <ShieldCheck className="h-5 w-5" />,
       label: "Segurança",
       onClick: () => toast({ 

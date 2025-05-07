@@ -5,6 +5,7 @@ interface ProfileMenuItemProps {
   icon: ReactNode;
   label: string;
   value?: string;
+  description?: string;
   onClick?: () => void;
 }
 
@@ -12,6 +13,7 @@ export function ProfileMenuItem({
   icon, 
   label, 
   value, 
+  description, 
   onClick 
 }: ProfileMenuItemProps) {
   return (
@@ -23,7 +25,12 @@ export function ProfileMenuItem({
         <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mr-3 text-primary">
           {icon}
         </div>
-        <span>{label}</span>
+        <div>
+          <span className="block">{label}</span>
+          {description && (
+            <span className="block text-xs text-neutral-500 mt-0.5">{description}</span>
+          )}
+        </div>
       </div>
       <div className="flex items-center">
         {value && <span className="mr-2 text-sm font-medium">{value}</span>}
