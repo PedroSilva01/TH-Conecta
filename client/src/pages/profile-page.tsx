@@ -11,7 +11,8 @@ import {
   Bell,
   HelpCircle,
   Edit,
-  LogOut
+  LogOut,
+  GraduationCap
 } from "lucide-react";
 import { getInitials, formatCurrency } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";

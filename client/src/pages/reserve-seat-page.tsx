@@ -40,9 +40,10 @@ export default function ReserveSeatPage() {
   
   // Form state
   const [selectedBusLine, setSelectedBusLine] = useState<string>("");
-  const [selectedDate, setSelectedDate] = useState<string>("Hoje, 21 Out");
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [selectedSeat, setSelectedSeat] = useState<string>("");
+  const [openDatePicker, setOpenDatePicker] = useState(false);
   
   // Get bus lines
   const { data: busLines, isLoading: isLoadingBusLines } = useQuery<BusLine[]>({
@@ -51,6 +52,16 @@ export default function ReserveSeatPage() {
   
   // Get selected bus line details
   const selectedBusLineDetails = busLines?.find(line => line.name === selectedBusLine);
+  
+  // Check if the time is off-peak for discount
+  const isOffPeakTime = (time: string): boolean => {
+    const hour = parseInt(time.split(':')[0]);
+    // Off-peak hours are before 7am, between 10am-4pm, and after 8pm
+    return (hour < 7) || (hour >= 10 && hour < 16) || (hour >= 20);
+  };
+  
+  // Format date display
+  const formattedSelectedDate = selectedDate ? format(selectedDate, "d 'de' MMMM, yyyy", { locale: ptBR }) : "";
   
   // Reserve seat mutation
   const reserveSeatMutation = useMutation({
@@ -79,6 +90,24 @@ export default function ReserveSeatPage() {
     }
   });
   
+  // Calculate price based on user category and time
+  const calculatePrice = (): number => {
+    // Base price
+    let price = 2.00;
+    
+    // Apply discount for off-peak times (20% off)
+    if (selectedTime && isOffPeakTime(selectedTime)) {
+      price = price * 0.8;
+    }
+    
+    // For a real app, check user category (student, child) from API
+    // Could be determined by checking user.type or verification status
+    
+    return price;
+  };
+  
+  const reservationPrice = calculatePrice();
+  
   const handleConfirmReservation = () => {
     if (!selectedBusLine || !selectedSeat || !user) {
       toast({
@@ -90,8 +119,7 @@ export default function ReserveSeatPage() {
     }
     
     // Create a Date object for the reservation
-    const today = new Date();
-    const reservationDate = new Date(today);
+    const reservationDate = new Date(selectedDate);
     
     // Parse the time string (e.g., "11:30")
     if (selectedTime) {
@@ -99,16 +127,13 @@ export default function ReserveSeatPage() {
       reservationDate.setHours(hours, minutes, 0, 0);
     }
     
-    // Price for seat reservation (could come from the API in a real app)
-    const reservationPrice = 2.00;
-    
     // Create reservation
     reserveSeatMutation.mutate({
       userId: user.id,
       busLine: selectedBusLine,
       departureTime: reservationDate,
       seatNumber: selectedSeat,
-      price: reservationPrice,
+      price: String(reservationPrice.toFixed(2)), // Convert to string to match schema
       status: "active"
     });
   };
@@ -149,19 +174,46 @@ export default function ReserveSeatPage() {
           {/* Date Selection */}
           <div className="mb-4">
             <label className="block text-sm text-neutral-500 mb-1">Data</label>
-            <div className="relative">
-              <Input 
-                value={selectedDate} 
-                onChange={(e) => setSelectedDate(e.target.value)} 
-                placeholder="Selecione a data" 
-              />
-              <Calendar className="absolute right-3 top-3 h-5 w-5 text-neutral-500" />
-            </div>
+            <Popover open={openDatePicker} onOpenChange={setOpenDatePicker}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-left font-normal"
+                >
+                  {formattedSelectedDate}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={(date) => {
+                    setSelectedDate(date || new Date());
+                    setOpenDatePicker(false);
+                  }}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
           </div>
           
           {/* Time Selection */}
           <div>
-            <label className="block text-sm text-neutral-500 mb-1">Horário</label>
+            <label className="block text-sm text-neutral-500 mb-1">
+              Horário 
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="inline-block ml-1 h-4 w-4 text-neutral-400" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-xs max-w-[200px]">
+                      Desconto de 20% em horários fora de pico: antes das 7h, entre 10h e 16h, e após 20h.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </label>
             <div className="relative">
               <Select 
                 value={selectedTime} 
@@ -176,14 +228,29 @@ export default function ReserveSeatPage() {
                     <SelectItem value="select-line" disabled>Selecione uma linha primeiro</SelectItem>
                   ) : (
                     <>
-                      <SelectItem value="11:30">11:30</SelectItem>
-                      <SelectItem value="12:30">12:30</SelectItem>
-                      <SelectItem value="13:30">13:30</SelectItem>
+                      <SelectItem value="06:30" className="flex items-center justify-between">
+                        <span>06:30</span>
+                        <span className="text-green-600 text-xs">Desconto de 20%</span>
+                      </SelectItem>
+                      <SelectItem value="07:30">07:30</SelectItem>
+                      <SelectItem value="08:30">08:30</SelectItem>
+                      <SelectItem value="11:30" className="flex items-center justify-between">
+                        <span>11:30</span>
+                        <span className="text-green-600 text-xs">Desconto de 20%</span>
+                      </SelectItem>
+                      <SelectItem value="12:30" className="flex items-center justify-between">
+                        <span>12:30</span>
+                        <span className="text-green-600 text-xs">Desconto de 20%</span>
+                      </SelectItem>
+                      <SelectItem value="17:30">17:30</SelectItem>
+                      <SelectItem value="21:30" className="flex items-center justify-between">
+                        <span>21:30</span>
+                        <span className="text-green-600 text-xs">Desconto de 20%</span>
+                      </SelectItem>
                     </>
                   )}
                 </SelectContent>
               </Select>
-              <CalendarClock className="absolute right-10 top-3 h-5 w-5 text-neutral-500" />
             </div>
           </div>
         </div>
@@ -227,7 +294,14 @@ export default function ReserveSeatPage() {
               </div>
               <div className="text-right">
                 <span className="text-sm text-neutral-500">Preço</span>
-                <p className="font-medium">{formatCurrency(2.00)}</p>
+                {selectedTime && isOffPeakTime(selectedTime) ? (
+                  <div>
+                    <p className="text-xs line-through text-neutral-500">{formatCurrency(2.00)}</p>
+                    <p className="font-medium text-green-600">{formatCurrency(reservationPrice)} <span className="text-xs">(-20%)</span></p>
+                  </div>
+                ) : (
+                  <p className="font-medium">{formatCurrency(reservationPrice)}</p>
+                )}
               </div>
             </div>
             

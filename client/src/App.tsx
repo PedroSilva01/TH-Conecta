@@ -13,6 +13,7 @@ import EventsPage from "@/pages/events-page";
 import RewardsPage from "@/pages/rewards-page";
 import ProfilePage from "@/pages/profile-page";
 import BalancePage from "@/pages/balance-page";
+import StudentVerificationPage from "@/pages/student-verification-page";
 import { ProtectedRoute } from "@/lib/protected-route";
 
 function Router() {
@@ -27,6 +28,7 @@ function Router() {
       <ProtectedRoute path="/rewards" component={RewardsPage} />
       <ProtectedRoute path="/profile" component={ProfilePage} />
       <ProtectedRoute path="/balance" component={BalancePage} />
+      <ProtectedRoute path="/student-verification" component={StudentVerificationPage} />
       <Route component={NotFound} />
     </Switch>
   );
