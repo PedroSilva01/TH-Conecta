@@ -1,0 +1,312 @@
+Divisão Detalhada do Projeto "Xteste" para 3 Programadores
+Para facilitar o desenvolvimento do aplicativo "Xteste", o projeto será dividido em três partes principais, cada uma focada em um conjunto específico de funcionalidades. Isso permitirá que os programadores trabalhem em paralelo, otimizando o tempo de desenvolvimento e garantindo uma estrutura mais organizada e eficiente.
+
+Programador 1: Autenticação e Perfil do Usuário
+
+Este programador será responsável por todas as funcionalidades relacionadas à autenticação de usuários e ao gerenciamento de seus perfis. Isso inclui desde o cadastro inicial até a edição de informações pessoais e configurações de segurança.
+
+Telas:
+
+Tela de Boas-Vindas / Login / Cadastro
+
+Tela de Perfil
+
+Funcionalidades:
+
+Autenticação:
+
+Login de usuários existentes via e-mail/telefone e senha.
+
+Cadastro de novos usuários com validação de dados (formato de e-mail/telefone, senha forte).
+
+Implementação de "Esqueci minha senha" com envio de link de redefinição por e-mail ou código por SMS.
+
+Opções de login social (Google, Facebook) com tratamento de possíveis erros e integração de dados.
+
+Bloqueio temporário de conta após múltiplas tentativas de login falhas (com mensagem informativa).
+
+Perfil do Usuário:
+
+Visualização detalhada do perfil do usuário (nome, e-mail, telefone).
+
+Edição das informações pessoais com validação em tempo real dos campos.
+
+Alteração de senha com confirmação da senha atual e validação da nova senha (requisitos de complexidade).
+
+Segurança:
+
+Criptografia robusta da senha do usuário no banco de dados (utilizar algoritmos modernos como bcrypt ou Argon2).
+
+Implementação de medidas de segurança contra ataques de força bruta e outras vulnerabilidades.
+
+Gestão segura das formas de pagamento salvas (se aplicável) com tokenização e conformidade com PCI DSS.
+
+Outras Funcionalidades:
+
+Definição e gerenciamento de rotas favoritas para acesso rápido na tela "Ver Rotas".
+
+Configuração de preferências de notificação (push e/ou e-mail) para diferentes tipos de alertas (promoções, serviço, eventos).
+
+Opção de sair do aplicativo com limpeza de sessão e dados de autenticação no dispositivo.
+
+Regras de Negócio:
+
+Tela de Boas-Vindas / Login / Cadastro:
+
+Verificar a existência do e-mail ou telefone no banco de dados durante o login.
+
+Validar a senha fornecida no login.
+
+Exibir mensagens de erro claras e informativas em caso de falha na autenticação.
+
+Implementar lógica de bloqueio de conta temporário após um número específico de tentativas de login falhas (ex: 3 tentativas).
+
+Oferecer opção de recuperação de senha por e-mail ou SMS.
+
+Validar o formato do e-mail e do telefone durante o cadastro.
+
+Verificar se o e-mail ou telefone já estão cadastrados no sistema.
+
+Validar a complexidade da senha durante o cadastro (mínimo de caracteres, combinação de letras e números).
+
+Criptografar a senha antes de armazená-la no banco de dados.
+
+Direcionar o usuário para a Tela Inicial após o cadastro bem-sucedido.
+
+Tela de Perfil:
+
+Permitir que os usuários editem suas informações pessoais (nome, e-mail, telefone), com validação de formato.
+
+Implementar um fluxo seguro para alteração de senha, exigindo a senha atual e validando a nova senha (requisitos de complexidade).
+
+Gerenciar as formas de pagamento salvas do usuário de forma segura, utilizando criptografia e conformidade com os padrões de segurança de dados (PCI DSS).
+
+Permitir que os usuários adicionem e removam rotas favoritas para acesso rápido na tela "Ver Rotas".
+
+Permitir que os usuários personalizem suas preferências de notificação, escolhendo quais tipos de informações desejam receber (promoções, alertas de serviço, informações sobre eventos).
+
+Encerrar a sessão do usuário e limpar os dados de autenticação ao selecionar a opção "Sair".
+
+Programador 2: Funcionalidades Principais de Transporte
+
+Este programador será responsável pelas funcionalidades centrais do aplicativo, que permitem aos usuários planejar e realizar suas viagens de transporte público. Isso inclui a compra de passagens, a visualização de rotas e a reserva de assentos.
+
+Telas:
+
+Tela Inicial
+
+Tela "Comprar Passagem"
+
+Tela "Ver Rotas"
+
+Tela "Reservar Assento"
+
+Funcionalidades:
+
+Compra de Passagens:
+
+Seleção de origem e destino da viagem com sugestões automáticas baseadas na localização do usuário e histórico de viagens.
+
+Seleção de data da viagem com calendário intuitivo e opção de "Hoje".
+
+Exibição de lista de linhas de ônibus disponíveis para a rota selecionada, ordenadas por horário de partida, com informações detalhadas (horário de partida, horário de chegada estimado, preço da passagem, duração da viagem, nível de lotação).
+
+Seleção do número de passageiros (adultos, crianças) com cálculo automático do preço total.
+
+Processamento de pagamentos via PIX (geração de QR Code e instruções), cartão de crédito (campos para número, validade e CVV, opção de salvar cartão), aproximação NFC (se disponível) e carteira virtual (se aplicável).
+
+Confirmação da compra com resumo detalhado (linha de ônibus, horário de partida, número de passageiros, preço total) e opção de confirmar o pagamento.
+
+Exibição de tela de sucesso após o pagamento, com mensagem de confirmação, código da passagem (QR Code ou código de barras), opção de salvar a passagem no celular e opção de adicionar à carteira digital.
+
+Visualização de Rotas:
+
+Barra de busca para digitar o destino com sugestões automáticas de locais e endereços.
+
+Visualização do mapa com exibição das linhas de ônibus, terminais e pontos de ônibus próximos, com opção de mostrar a localização dos ônibus em tempo real.
+
+Exibição de lista de rotas sugeridas que correspondem à busca do usuário, ordenadas por tempo de viagem ou conveniência, com informações detalhadas (tempo estimado de viagem, número de baldeações, distância total, opções de transporte).
+
+Exibição do itinerário detalhado da rota selecionada, incluindo lista de paradas, horários de chegada e partida em cada parada e informações sobre baldeações.
+
+Reserva de Assentos:
+
+Exibição de lista de linhas de ônibus que oferecem a opção de reserva de assentos, com indicação visual.
+
+Seleção de origem e destino da viagem (limitados às linhas com reserva).
+
+Seleção de data e horário da viagem.
+
+Exibição de mapa de assentos do ônibus selecionado, com indicação visual dos assentos disponíveis e reservados, e opção de selecionar um ou mais assentos (limitado a um percentual da capacidade total).
+
+Confirmação da reserva com resumo detalhado (linha de ônibus, data e horário da viagem, assentos selecionados, preço da reserva) e opção de confirmar a reserva.
+
+Funcionalidades da Tela Inicial:
+
+Exibição do nome do usuário e seu saldo (se aplicável).
+
+Carregamento dinâmico de promoções e notícias do banco de dados para exibição no carrossel (se aplicável).
+
+Implementação de botões de acesso rápido para as respectivas telas de funcionalidade ("Comprar Passagem", "Ver Rotas", "Reservar Assento", "Eventos Culturais", "Meu Saldo / Histórico").
+
+Implementação da barra de navegação inferior para acesso rápido às principais seções do aplicativo (Início, Mapa, Recompensas, Perfil).
+
+Regras de Negócio:
+
+Tela "Comprar Passagem":
+
+Filtrar as linhas de ônibus com base na origem, destino e data selecionados.
+
+Calcular o preço total da passagem com base no número de passageiros e em possíveis descontos.
+
+Comunicar-se com os sistemas de pagamento para processar a transação de forma segura.
+
+Gerar um código único para a passagem (QR Code ou código de barras) e armazená-lo no banco de dados.
+
+Registrar a compra no histórico de viagens do usuário.
+
+Atualizar o saldo do usuário, se aplicável (em caso de uso de carteira virtual).
+
+Enviar uma notificação push e/ou e-mail de confirmação da compra para o usuário.
+
+Tela "Ver Rotas":
+
+Utilizar serviços de geolocalização para sugerir rotas com base na localização atual do usuário.
+
+Integrar com um sistema de informações de transporte público para obter dados atualizados sobre rotas, horários e possíveis atrasos.
+
+Calcular o tempo estimado de viagem, considerando o tráfego em tempo real (se disponível).
+
+Permitir que os usuários filtrem as rotas por tipo de transporte (ônibus convencional, BRT).
+
+Permitir que os usuários salvem rotas favoritas para acesso rápido.
+
+Tela "Reservar Assento":
+
+Exibir apenas as linhas de ônibus que possuem a funcionalidade de reserva de assentos habilitada.
+
+Limitar o número de assentos que podem ser reservados (ex: 70% da capacidade total do ônibus) para garantir assentos disponíveis para passageiros sem reserva.
+
+Impedir que os usuários reservem assentos que já foram reservados por outros passageiros.
+
+Registrar a reserva do assento no sistema e associá-la ao usuário.
+
+Gerar um código de reserva único (QR Code ou número) para o usuário apresentar no momento do embarque.
+
+Definir uma política de cancelamento de reservas, incluindo prazos e possíveis taxas.
+
+Tela Inicial:
+
+Exibir o nome do usuário e seu saldo (se aplicável).
+
+Carregar dinamicamente as promoções e notícias do banco de dados.
+
+Os botões de acesso rápido devem direcionar o usuário para as respectivas telas de funcionalidade.
+
+Programador 3: Funcionalidades Adicionais e Integrações
+
+Este programador será responsável pelas funcionalidades que enriquecem a experiência do usuário, como a divulgação de eventos culturais, o programa de recompensas e o gerenciamento de saldo e histórico.
+
+Telas:
+
+Tela "Eventos Culturais"
+
+Tela "Meu Saldo / Histórico"
+
+Tela "Recompensas"
+
+Tela de Recarga de Saldo
+
+Funcionalidades:
+
+Eventos Culturais:
+
+Exibição de lista de eventos culturais nos terminais de ônibus, ordenados por data ou proximidade, com informações detalhadas (título, data e horário, local, descrição, imagem/pôster).
+
+Opção de filtrar os eventos por tipo (música, teatro, dança, exposição) ou data.
+
+Exibição de detalhes completos do evento ao selecionar, incluindo descrição, artistas, horários e datas, localização exata, preço do ingresso e informações sobre descontos para usuários do aplicativo.
+
+Botão "Obter Desconto" (quando aplicável) que direciona o usuário para a tela de compra de passagem (se o desconto estiver vinculado) ou gera um cupom de desconto no perfil do usuário.
+
+Meu Saldo / Histórico:
+
+Exibição do saldo disponível na carteira virtual do usuário (se aplicável), com opção de "Adicionar Saldo" que direciona para a tela de recarga.
+
+Exibição do histórico de compras de passagens do usuário, ordenadas por data, com informações detalhadas (data da compra, linha de ônibus, horário da viagem, número de passageiros, preço total).
+
+Exibição do histórico de reservas de assentos do usuário, ordenadas por data, com informações detalhadas (data da reserva, linha de ônibus, data e horário da viagem, assentos reservados).
+
+Exibição do histórico de utilização de cupons de desconto e recompensas, ordenados por data, com informações detalhadas (descrição do cupom/recompensa, data de utilização, valor do desconto/benefício).
+
+Recompensas:
+
+Exibição do saldo de pontos acumulados pelo usuário no programa de recompensas.
+
+Exibição de lista de benefícios disponíveis para troca, ordenados por categoria ou popularidade, com informações detalhadas (descrição do benefício, número de pontos necessários, imagem/ícone, validade).
+
+Exibição de detalhes completos do benefício ao selecionar, incluindo descrição, condições de uso, local de utilização e instruções para resgate.
+
+Botão "Trocar" para iniciar o processo de troca de pontos pelo benefício selecionado.
+
+Exibição do histórico de benefícios já trocados pelo usuário, ordenados por data, com informações detalhadas (descrição do benefício trocado, data da troca, número de pontos utilizados).
+
+Recarga de Saldo:
+
+Exibição do saldo atual da carteira virtual do usuário.
+
+Campo para o usuário inserir o valor da recarga, com opções de valores predefinidos (ex: R$ 10, R$ 20, R$ 50).
+
+Opções de pagamento para recarga: cartão de crédito (campos para número, validade e CVV, opção de salvar cartão), PIX (geração de QR Code e instruções), boleto bancário e transferência bancária (informações da conta).
+
+Confirmação da recarga com resumo (valor e forma de pagamento) e opção de confirmar.
+
+Tela de sucesso após a recarga, com mensagem de confirmação e exibição do novo saldo.
+
+Regras de Negócio:
+
+Tela "Eventos Culturais":
+
+Carregar dinamicamente os eventos culturais cadastrados no sistema, incluindo informações detalhadas e imagens.
+
+Filtrar os eventos por data, tipo e localização (terminal).
+
+Verificar se o usuário possui os requisitos para obter o desconto (ex: passagem comprada no aplicativo, participação em programa de fidelidade).
+
+Gerar um cupom de desconto único para o usuário, se aplicável, e registrá-lo no sistema.
+
+Rastrear o uso dos cupons de desconto para fins de controle e análise.
+
+Tela "Meu Saldo / Histórico":
+
+Registrar todas as transações financeiras do usuário, incluindo compras de passagens, reservas de assentos e utilização de cupons e recompensas.
+
+Atualizar o saldo do usuário em tempo real, refletindo todas as transações.
+
+Permitir que os usuários visualizem os detalhes de cada transação, incluindo informações adicionais, como o método de pagamento utilizado.
+
+Fornecer opções para filtrar e ordenar o histórico de transações por data, tipo ou valor.
+
+Tela "Recompensas":
+
+Calcular e creditar pontos na conta do usuário com base nas regras do programa de recompensas (ex: por compra de passagem, participação em eventos, feedback).
+
+Verificar se o usuário possui pontos suficientes para trocar pelo benefício selecionado.
+
+Registrar a troca do benefício e debitar os pontos correspondentes da conta do usuário.
+
+Gerar um código ou voucher único para o usuário apresentar ao utilizar o benefício (se aplicável).
+
+Rastrear o uso dos benefícios trocados para fins de controle e análise.
+
+Tela de Recarga de Saldo:
+
+Validar o valor da recarga inserido pelo usuário (valor mínimo, valor máximo).
+
+Comunicar-se com os sistemas de pagamento para processar a transação de recarga de forma segura.
+
+Atualizar o saldo do usuário na carteira virtual em tempo real.
+
+Registrar a transação no histórico de transações do usuário.
+
+Enviar uma notificação push e/ou e-mail de confirmação da recarga para o usuário.
