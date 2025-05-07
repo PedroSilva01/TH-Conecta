@@ -114,6 +114,18 @@ export default function RewardsPage() {
       user.points >= level.minPoints && user.points <= level.maxPoints
     );
     
+    // If no level is found, default to the first level
+    if (currentLevelIndex === -1) {
+      const firstLevel = levels[0];
+      const secondLevel = levels[1];
+      return {
+        currentLevel: firstLevel.name,
+        nextLevel: secondLevel.name,
+        progress: 0,
+        pointsToNext: secondLevel.minPoints
+      };
+    }
+    
     const currentLevel = levels[currentLevelIndex];
     const nextLevel = levels[currentLevelIndex + 1];
     
@@ -234,7 +246,7 @@ export default function RewardsPage() {
                         <div className="flex justify-between">
                           <h4 className="font-medium">{rewardDetails?.title || 'Recompensa'}</h4>
                           <span className="text-neutral-500 text-sm">
-                            {new Date(redemption.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+                            {redemption.date ? new Date(redemption.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : 'Data não disponível'}
                           </span>
                         </div>
                         <div className="flex justify-between">
