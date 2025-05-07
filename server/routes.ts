@@ -8,6 +8,58 @@ import { z } from "zod";
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication
   setupAuth(app);
+  
+  // User information and documents
+  app.get("/api/user/student-verification", async (req, res, next) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "You must be logged in to check student verification status" });
+    }
+    
+    try {
+      // In a real app, fetch from database
+      // For now, we'll return a mock status
+      res.json({ 
+        verified: false,
+        expiryDate: null,
+        message: "É necessário enviar um comprovante de matrícula válido."
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.post("/api/user/student-verification", async (req, res, next) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "You must be logged in to upload student verification" });
+    }
+    
+    try {
+      // In a real app, we'd save the file to storage and update the database
+      // For now, we'll just simulate success
+      
+      // Validate the request
+      const schema = z.object({
+        documentBase64: z.string().min(1),
+        documentType: z.string().min(1),
+        institution: z.string().min(1),
+      });
+      
+      const validatedData = schema.parse(req.body);
+      
+      // Set an expiry date for one year from now
+      const expiryDate = new Date();
+      expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+      
+      res.status(201).json({
+        verified: true,
+        expiryDate: expiryDate.toISOString(),
+        message: "Comprovante de estudante enviado com sucesso e válido até " + 
+                 expiryDate.toLocaleDateString('pt-BR')
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
 
   // Bus Lines Routes
   app.get("/api/bus-lines", async (req, res, next) => {
@@ -135,7 +187,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     try {
-      const validatedData = insertSeatReservationSchema.parse(req.body);
+      // Parse date string to proper Date object if needed
+      const formData = { 
+        ...req.body,
+        departureTime: new Date(req.body.departureTime),
+        price: typeof req.body.price === 'number' ? String(req.body.price) : req.body.price
+      };
+      
+      const validatedData = insertSeatReservationSchema.parse(formData);
       
       // Check if seat is already reserved
       const existingReservations = await storage.getSeatReservationsByBusLine(
@@ -344,7 +403,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create transaction
       const transaction = await storage.createTransaction({
         userId: req.user!.id,
-        amount: validatedData.amount,
+        amount: String(validatedData.amount), // Convert to string for database
         type: 'recharge',
         description: `Balance recharge`,
         paymentMethod: validatedData.paymentMethod,
@@ -360,6 +419,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       res.status(201).json(transaction);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.post("/api/transactions/buy-ticket", async (req, res, next) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "You must be logged in to buy tickets" });
+    }
+    
+    try {
+      const schema = z.object({
+        quantity: z.number().int().positive(),
+        type: z.string(), // adult, student, child
+        paymentMethod: z.string(),
+        isDiscounted: z.boolean().optional().default(false)
+      });
+      
+      const validatedData = schema.parse(req.body);
+      
+      // Calculate price based on type and time
+      let unitPrice = 4.50; // Base price for adults
+      
+      // Apply discounts based on user type
+      if (validatedData.type === "child") {
+        unitPrice = 0; // Free for children under 10
+      } else if (validatedData.type === "student") {
+        unitPrice = 2.25; // 50% discount for students
+      } else if (validatedData.type === "adult" && validatedData.isDiscounted) {
+        unitPrice = 3.60; // 20% discount during off-peak hours
+      }
+      
+      const totalAmount = unitPrice * validatedData.quantity;
+      
+      // Create transaction
+      const transaction = await storage.createTransaction({
+        userId: req.user!.id,
+        amount: String(-totalAmount), // Negative because it's a purchase, convert to string
+        type: 'purchase',
+        description: `Compra de ${validatedData.quantity} vale-transporte${validatedData.quantity > 1 ? 's' : ''} (${validatedData.type})${validatedData.isDiscounted ? ' com desconto de horário' : ''}`,
+        paymentMethod: validatedData.paymentMethod,
+        relatedEntityId: null,
+        relatedEntityType: 'ticket'
+      });
+      
+      // Update user balance
+      const user = await storage.getUser(req.user!.id);
+      if (user) {
+        const newBalance = Number(user.balance) - totalAmount;
+        await storage.updateUserBalance(user.id, newBalance);
+      }
+      
+      res.status(201).json({
+        transaction,
+        tickets: {
+          quantity: validatedData.quantity,
+          type: validatedData.type,
+          unitPrice,
+          totalAmount,
+          isDiscounted: validatedData.isDiscounted
+        }
+      });
     } catch (error) {
       next(error);
     }
