@@ -51,6 +51,7 @@ export const busLines = pgTable("bus_lines", {
   lowOccupancy: boolean("low_occupancy").default(true),
   hasWifi: boolean("has_wifi").default(false),
   isAccessible: boolean("is_accessible").default(true),
+  hasAirConditioning: boolean("has_air_conditioning").default(true),
 });
 
 export const culturalEvents = pgTable("cultural_events", {

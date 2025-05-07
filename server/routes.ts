@@ -104,7 +104,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     try {
-      const validatedData = insertTicketSchema.parse(req.body);
+      // Convert date strings to proper Date objects and price to string if needed
+      const formData = {
+        ...req.body,
+        departureTime: new Date(req.body.departureTime),
+        arrivalTime: new Date(req.body.arrivalTime),
+        price: typeof req.body.price === 'number' ? String(req.body.price) : req.body.price
+      };
+      
+      const validatedData = insertTicketSchema.parse(formData);
       
       // Generate QR code (in a real app, use a proper QR code generation library)
       const qrCode = `XTESTE-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -118,7 +126,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create transaction record
       await storage.createTransaction({
         userId: req.user!.id,
-        amount: -Number(validatedData.price),
+        amount: String(-Number(validatedData.price)), // Convert to string with negative value
         type: 'purchase',
         description: `Ticket: ${validatedData.busLine} - ${validatedData.origin} to ${validatedData.destination}`,
         paymentMethod: req.body.paymentMethod || 'wallet',
@@ -219,7 +227,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (Number(validatedData.price) > 0) {
         await storage.createTransaction({
           userId: req.user!.id,
-          amount: -Number(validatedData.price),
+          amount: String(-Number(validatedData.price)), // Convert to string
           type: 'purchase',
           description: `Seat Reservation: ${validatedData.busLine} - Seat ${validatedData.seatNumber}`,
           paymentMethod: req.body.paymentMethod || 'wallet',

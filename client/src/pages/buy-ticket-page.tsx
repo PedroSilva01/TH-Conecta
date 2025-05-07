@@ -11,7 +11,9 @@ import {
   PlusCircle, 
   Wifi, 
   Users, 
-  Accessibility 
+  Accessibility,
+  Wind,
+  Snowflake
 } from "lucide-react";
 import { BusLine, insertTicketSchema } from "@shared/schema";
 import { PaymentModal } from "@/components/tickets/payment-modal";
@@ -86,10 +88,22 @@ export default function BuyTicketPage() {
     
     setSelectedPaymentMethod(paymentMethod);
     
+    // Calculate price with all applicable discounts
+    let basePrice = Number(selectedBusLine.price);
+    
+    // Apply 5% discount for buses without air conditioning
+    if (!selectedBusLine.hasAirConditioning) {
+      basePrice = basePrice * 0.95; // 5% discount
+    }
+    
+    // Calculate total with passenger types
+    const adultPrice = basePrice * adults;
+    const childrenPrice = basePrice * 0.5 * children; // Children pay half price
+    const subtotal = adultPrice + childrenPrice;
+    
     // Check if user has enough balance when using wallet
     if (paymentMethod === "wallet" && user) {
-      const total = Number(selectedBusLine.price) * adults + (Number(selectedBusLine.price) * 0.5 * children);
-      if (Number(user.balance) < total) {
+      if (Number(user.balance) < subtotal) {
         toast({
           title: "Saldo insuficiente",
           description: "Você não tem saldo suficiente para esta compra. Por favor, recarregue seu saldo ou escolha outro método de pagamento.",
@@ -100,7 +114,6 @@ export default function BuyTicketPage() {
     }
     
     const serviceFeeFactor = 0.1; // 10% service fee
-    const subtotal = Number(selectedBusLine.price) * adults + (Number(selectedBusLine.price) * 0.5 * children);
     const serviceFee = subtotal * serviceFeeFactor;
     const total = subtotal + serviceFee;
     
@@ -114,7 +127,7 @@ export default function BuyTicketPage() {
       busLine: selectedBusLine.name,
       departureTime: new Date(),
       arrivalTime: new Date(new Date().getTime() + 30 * 60000), // 30 minutes later
-      price: total,
+      price: String(total), // Convert to string to match schema
       passengers,
       qrCode: "",
       status: "active"
@@ -258,7 +271,7 @@ export default function BuyTicketPage() {
                 <span>Chegada: {busLine.arrivalTime}</span>
               </div>
               
-              <div className="flex justify-between items-center mb-3">
+              <div className="flex flex-wrap gap-3 mb-3">
                 <div className="flex items-center">
                   <Users className={`h-4 w-4 mr-1 ${busLine.lowOccupancy ? 'text-green-500' : 'text-yellow-500'}`} />
                   <span className="text-sm">{busLine.lowOccupancy ? 'Baixa' : 'Média'} ocupação</span>
@@ -275,6 +288,20 @@ export default function BuyTicketPage() {
                     <span className="text-sm">Acessível</span>
                   </div>
                 )}
+                <div className="flex items-center">
+                  {busLine.hasAirConditioning ? (
+                    <>
+                      <Snowflake className="h-4 w-4 mr-1 text-blue-500" />
+                      <span className="text-sm">Ar-condicionado</span>
+                    </>
+                  ) : (
+                    <>
+                      <Wind className="h-4 w-4 mr-1 text-red-500" />
+                      <span className="text-sm">Sem ar-condicionado</span>
+                      <span className="ml-1 text-xs bg-green-100 text-green-800 px-1.5 py-0.5 rounded">-5%</span>
+                    </>
+                  )}
+                </div>
               </div>
               
               <Button 
@@ -297,9 +324,22 @@ export default function BuyTicketPage() {
         <PaymentModal 
           open={paymentModalOpen} 
           onOpenChange={setPaymentModalOpen}
-          subtotal={Number(selectedBusLine.price) * adults + (Number(selectedBusLine.price) * 0.5 * children)}
-          serviceFee={Number(selectedBusLine.price) * adults * 0.1} // 10% service fee
+          subtotal={
+            // Calculate with air conditioning discount if applicable
+            (selectedBusLine.hasAirConditioning 
+              ? Number(selectedBusLine.price) 
+              : Number(selectedBusLine.price) * 0.95) * adults + 
+            ((selectedBusLine.hasAirConditioning 
+              ? Number(selectedBusLine.price) 
+              : Number(selectedBusLine.price) * 0.95) * 0.5 * children)
+          }
+          serviceFee={
+            (selectedBusLine.hasAirConditioning 
+              ? Number(selectedBusLine.price) 
+              : Number(selectedBusLine.price) * 0.95) * adults * 0.1
+          } // 10% service fee
           onConfirmPayment={handleConfirmPayment}
+          hasAirConditioning={selectedBusLine.hasAirConditioning}
         />
       )}
 
