@@ -69,7 +69,7 @@ export default function BalancePage() {
   const [activeTab, setActiveTab] = useState<string>("all");
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [buyTicketModalOpen, setBuyTicketModalOpen] = useState(false);
-  const [ticketType, setTicketType] = useState<string>("regular");
+  const [ticketType, setTicketType] = useState<string>("adult");
   const [ticketQuantity, setTicketQuantity] = useState<number>(1);
   const [currentTimeSlot, setCurrentTimeSlot] = useState<string>("");
   const [hasDiscountedRate, setHasDiscountedRate] = useState<boolean>(false);
@@ -242,15 +242,15 @@ export default function BalancePage() {
     
     // Different price for different ticket types
     let price = basePrice;
-    if (ticketType === "student") {
-      price = basePrice * 0.5; // 50% discount for students
-    } else if (ticketType === "senior") {
-      price = 0; // Free for seniors
-    }
-    
-    // Apply time-based discount if applicable
-    if (hasDiscountedRate && ticketType === "regular") {
-      price = price * (1 - discountRate);
+    if (ticketType === "child") {
+      price = 0; // Children under 10 don't pay
+    } else if (ticketType === "student") {
+      price = basePrice * 0.5; // 50% discount for students (school or university)
+    } else if (ticketType === "adult") {
+      // Apply time-based discount if applicable in off-peak hours
+      if (hasDiscountedRate) {
+        price = price * (1 - discountRate);
+      }
     }
     
     return price * ticketQuantity;
@@ -554,15 +554,15 @@ export default function BalancePage() {
               
               <div 
                 className={`border rounded-lg p-4 flex items-center cursor-pointer mb-2 ${
-                  ticketType === "regular" ? "border-primary" : "border-neutral-200"
+                  ticketType === "adult" ? "border-primary" : "border-neutral-200"
                 }`}
-                onClick={() => setTicketType("regular")}
+                onClick={() => setTicketType("adult")}
               >
                 <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mr-4">
                   <Ticket className="h-5 w-5 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <div className="font-medium">Padrão</div>
+                  <div className="font-medium">Adulto</div>
                   <div className="text-sm text-neutral-500">
                     {hasDiscountedRate 
                       ? `${formatCurrency(3.60)} (com desconto de 20%)` 
@@ -570,9 +570,9 @@ export default function BalancePage() {
                   </div>
                 </div>
                 <div className={`w-6 h-6 rounded-full border-2 ${
-                  ticketType === "regular" ? "border-primary" : "border-neutral-300"
+                  ticketType === "adult" ? "border-primary" : "border-neutral-300"
                 } flex items-center justify-center`}>
-                  {ticketType === "regular" && (
+                  {ticketType === "adult" && (
                     <div className="w-3 h-3 bg-primary rounded-full"></div>
                   )}
                 </div>
@@ -589,7 +589,7 @@ export default function BalancePage() {
                 </div>
                 <div className="flex-1">
                   <div className="font-medium">Estudante</div>
-                  <div className="text-sm text-neutral-500">{formatCurrency(2.25)} (50% de desconto)</div>
+                  <div className="text-sm text-neutral-500">{formatCurrency(2.25)} (meia passagem)</div>
                 </div>
                 <div className={`w-6 h-6 rounded-full border-2 ${
                   ticketType === "student" ? "border-primary" : "border-neutral-300"
@@ -601,22 +601,22 @@ export default function BalancePage() {
               </div>
               
               <div 
-                className={`border rounded-lg p-4 flex items-center cursor-pointer ${
-                  ticketType === "senior" ? "border-primary" : "border-neutral-200"
+                className={`border rounded-lg p-4 flex items-center cursor-pointer mb-2 ${
+                  ticketType === "child" ? "border-primary" : "border-neutral-200"
                 }`}
-                onClick={() => setTicketType("senior")}
+                onClick={() => setTicketType("child")}
               >
                 <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-4">
                   <Ticket className="h-5 w-5 text-green-600" />
                 </div>
                 <div className="flex-1">
-                  <div className="font-medium">Idoso</div>
+                  <div className="font-medium">Criança (até 10 anos)</div>
                   <div className="text-sm text-neutral-500">Gratuito</div>
                 </div>
                 <div className={`w-6 h-6 rounded-full border-2 ${
-                  ticketType === "senior" ? "border-primary" : "border-neutral-300"
+                  ticketType === "child" ? "border-primary" : "border-neutral-300"
                 } flex items-center justify-center`}>
-                  {ticketType === "senior" && (
+                  {ticketType === "child" && (
                     <div className="w-3 h-3 bg-primary rounded-full"></div>
                   )}
                 </div>
@@ -730,12 +730,12 @@ export default function BalancePage() {
               <div className="flex justify-between mb-2">
                 <span className="text-neutral-600">Preço unitário:</span>
                 <span className="font-medium">
-                  {ticketType === "senior" 
+                  {ticketType === "child" 
                     ? "Gratuito" 
-                    : hasDiscountedRate && ticketType === "regular"
-                      ? `${formatCurrency(3.60)} (c/ desconto)`
-                      : ticketType === "student" 
-                        ? `${formatCurrency(2.25)} (c/ desconto)`
+                    : ticketType === "student"
+                      ? formatCurrency(2.25)
+                      : hasDiscountedRate && ticketType === "adult"
+                        ? `${formatCurrency(3.60)} (c/ desconto)`
                         : formatCurrency(4.50)
                   }
                 </span>
