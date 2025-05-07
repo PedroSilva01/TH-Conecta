@@ -11,6 +11,7 @@ interface PaymentModalProps {
   subtotal: number;
   serviceFee: number;
   onConfirmPayment: (paymentMethod: string) => void;
+  hasAirConditioning?: boolean;
 }
 
 export function PaymentModal({ 
@@ -18,7 +19,8 @@ export function PaymentModal({
   onOpenChange, 
   subtotal, 
   serviceFee, 
-  onConfirmPayment 
+  onConfirmPayment,
+  hasAirConditioning
 }: PaymentModalProps) {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("wallet");
   const { user } = useAuth();
@@ -114,6 +116,12 @@ export function PaymentModal({
             <span>Subtotal</span>
             <span>{formatCurrency(subtotal)}</span>
           </div>
+          {!hasAirConditioning && (
+            <div className="flex justify-between mb-2 text-green-700">
+              <span>Desconto sem ar-condicionado</span>
+              <span>-5%</span>
+            </div>
+          )}
           <div className="flex justify-between mb-2">
             <span>Taxa de serviço</span>
             <span>{formatCurrency(serviceFee)}</span>

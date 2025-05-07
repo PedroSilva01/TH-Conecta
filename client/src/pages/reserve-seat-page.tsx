@@ -12,8 +12,8 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { BusLine, insertSeatReservationSchema } from "@shared/schema";
-import { CalendarClock, Info } from "lucide-react";
+import { BusLine, Ticket, insertSeatReservationSchema } from "@shared/schema";
+import { CalendarClock, Info, Ticket as TicketIcon } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -45,10 +45,20 @@ export default function ReserveSeatPage() {
   const [selectedSeat, setSelectedSeat] = useState<string>("");
   const [openDatePicker, setOpenDatePicker] = useState(false);
   
-  // Get bus lines
+  // Get user tickets
+  const { data: userTickets, isLoading: isLoadingTickets } = useQuery<Ticket[]>({
+    queryKey: ["/api/tickets"],
+  });
+  
+  // Get bus lines (only from purchased tickets)
   const { data: busLines, isLoading: isLoadingBusLines } = useQuery<BusLine[]>({
     queryKey: ["/api/bus-lines"],
   });
+  
+  // Filter bus lines to only show those the user has tickets for
+  const purchasedBusLines = busLines?.filter(busLine => 
+    userTickets?.some(ticket => ticket.busLine === busLine.name)
+  );
   
   // Get selected bus line details
   const selectedBusLineDetails = busLines?.find(line => line.name === selectedBusLine);
@@ -144,6 +154,26 @@ export default function ReserveSeatPage() {
 
       {/* Main Content */}
       <div className="flex-1 p-4">
+        {!isLoadingTickets && (!userTickets || userTickets.length === 0) && (
+          <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-6 flex items-start">
+            <TicketIcon className="h-5 w-5 text-orange-500 mt-0.5 mr-3 flex-shrink-0" />
+            <div>
+              <h3 className="font-medium text-orange-800">Sem passagens disponíveis</h3>
+              <p className="text-sm text-orange-700 mt-1">
+                Você precisa comprar uma passagem antes de reservar um assento. 
+                Retorne para a página principal e selecione "Comprar Passagem".
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-2 bg-white hover:bg-orange-100 text-orange-700 border-orange-200"
+                onClick={() => navigate("/buy-ticket")}
+              >
+                Ir para Comprar Passagem
+              </Button>
+            </div>
+          </div>
+        )}
         <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
           {/* Line Selection */}
           <div className="mb-4">
@@ -157,14 +187,18 @@ export default function ReserveSeatPage() {
                   <SelectValue placeholder="Selecione uma linha" />
                 </SelectTrigger>
                 <SelectContent>
-                  {isLoadingBusLines ? (
+                  {isLoadingBusLines || isLoadingTickets ? (
                     <SelectItem value="loading" disabled>Carregando linhas...</SelectItem>
-                  ) : (
-                    busLines?.map((line, index) => (
+                  ) : purchasedBusLines && purchasedBusLines.length > 0 ? (
+                    purchasedBusLines.map((line, index) => (
                       <SelectItem key={index} value={line.name}>
                         {line.name} - {line.origin} → {line.destination}
                       </SelectItem>
                     ))
+                  ) : (
+                    <SelectItem value="no-tickets" disabled>
+                      Você não possui passagens. Compre uma passagem primeiro.
+                    </SelectItem>
                   )}
                 </SelectContent>
               </Select>
