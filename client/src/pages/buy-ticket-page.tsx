@@ -339,7 +339,7 @@ export default function BuyTicketPage() {
               : Number(selectedBusLine.price) * 0.95) * adults * 0.1
           } // 10% service fee
           onConfirmPayment={handleConfirmPayment}
-          hasAirConditioning={selectedBusLine.hasAirConditioning}
+          hasAirConditioning={selectedBusLine.hasAirConditioning ? true : false}
         />
       )}
 

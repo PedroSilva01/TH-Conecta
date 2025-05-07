@@ -24,7 +24,13 @@ export default function StudentVerificationPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   
   // Get verification status
-  const { data: verificationStatus, isLoading } = useQuery({
+  type VerificationStatusType = {
+    verified: boolean;
+    expiryDate?: string;
+    message?: string;
+  };
+  
+  const { data: verificationStatus, isLoading } = useQuery<VerificationStatusType>({
     queryKey: ["/api/user/student-verification"],
     enabled: !!user,
   });
@@ -120,7 +126,7 @@ export default function StudentVerificationPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {verificationStatus?.verified ? (
+            {verificationStatus && verificationStatus.verified ? (
               <Alert className="mb-4 bg-green-50 border-green-200">
                 <AlertTitle>Verificação ativa!</AlertTitle>
                 <AlertDescription>
