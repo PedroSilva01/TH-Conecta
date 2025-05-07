@@ -1,0 +1,126 @@
+
+e a função de adicionar dinheiro, comprar vale ou coisa do tipo, como se fosse uma pagina apenas para a carteira mesmo, com as varias opçoes la
+
+
+Segue uma descrição detalhada da lógica, regras de negócio e fluxo operacional para o módulo de **Tarifas Diferenciadas por Horário/Dia** no app **Xteste**:
+
+---
+
+## 1. Definições de Faixas Horárias
+
+| Faixa              | Horário              | Tipo            |
+| ------------------ | -------------------- | --------------- |
+| Manhã pico         | 06:00 – 08:00        | Tarifa cheia    |
+| Intervalo almo­ço  | 08:00 – 11:30        | Tarifa reduzida |
+| Almoço pico        | 11:30 – 14:00        | Tarifa cheia    |
+| Pós-almoço ocioso  | 14:00 – 17:30        | Tarifa reduzida |
+| Tarde pico         | 17:30 – 19:00        | Tarifa cheia    |
+| Fora de pico geral | 19:00 – 06:00 (next) | Tarifa reduzida |
+
+* **Tarifa cheia**: valor padrão da passagem.
+* **Tarifa reduzida**: valor com desconto fixo (por exemplo, –20%) ou valor diferenciado definido pela concessionária.
+
+---
+
+## 2. Regras de Negócio
+
+1. **Detecção de horário**
+
+   * Ao iniciar o processo de compra (ou reserva), o app consulta o horário local do dispositivo e identifica em qual faixa de horário a solicitação se encaixa.
+   * Se o usuário alterar o destino ou refazer a compra em poucos minutos, o sistema revalida a faixa horária em cada nova tentativa.
+
+2. **Cálculo do valor**
+
+   * **Se faixa = pico** → aplica tarifa cheia.
+   * **Se faixa = reduzida** → aplica tarifa reduzida.
+   * O valor exato de cada faixa é configurável no sistema de gestão da bilhetagem, permitindo ajustes futuros (por exemplo, –10%, –20% ou valor fixo).
+
+3. **Interface e Transparência**
+
+   * Na tela de seleção de passageiro/assento, o app exibe claramente:
+
+     * Horário atual e faixa correspondente (e.g. “Você está comprando PASSAGEM em horário fora de pico: 20% de desconto aplicado”).
+     * Valor original × valor com desconto (se aplicável).
+   * Um rodapé ou badge “Tarifa Reduzida” aparece em destaque sempre que o desconto for aplicado.
+
+4. **Notificações Push**
+
+   * Quando o usuário tem o app aberto próximo a um horário de mudança de faixa (por ex., 08:00 ou 11:30), pode receber notificação:
+
+     * “Em 5 min, inicia o horário de pico e a tarifa voltará ao valor cheio.”
+     * “Agora é horário de tarifa reduzida: aproveite desconto de 20%!”
+
+5. **Histórico e Relatórios**
+
+   * Cada transação grava timestamp e valor pago, permitindo ao gestor gerar relatórios de receita por faixa horária e avaliar o impacto da política tarifária.
+
+---
+
+## 3. Fluxo de Compra no App
+
+1. **Início**
+
+   * Usuário toca em “Comprar Passagem” ou “Reservar Assento”.
+   * App faz `GET /bilhetagem/configuracao/faixas` e obtém as faixas atuais (horários e percentuais).
+
+2. **Cálculo**
+
+   * App compara `horario_atual` (do smartphone) com cada faixa.
+   * Seleciona tarifa (`cheia` ou `reduzida`) e calcula `valor_final = valor_base × (1 – desconto)`.
+
+3. **Confirmação**
+
+   * Exibe resumo:
+
+     ```
+     Origem – Destino
+     Data e hora da viagem: 07/05/2025 • 13:15
+     Tarifa: R$ 4,50  → Tarifa Reduzida (–20%) → R$ 3,60
+     [Confirmar Pagamento]
+     ```
+   * Botão “Confirmar” só fica ativo após usuário ver o valor.
+
+4. **Pagamento**
+
+   * Usuário escolhe método (PIX, cartão, NFC).
+   * Após conclusão, o sistema emite QR Code ou ticket digital com `timestamp` e `faixa_horaria`.
+
+5. **Notificação Pós-Viagem**
+
+   * Opcional: enviar push de agradecimento e informar quantos pontos “milhas” foram acumulados pela viagem.
+
+---
+
+## 4. Exceções e Considerações
+
+* **Viagem iniciada em um horário e concluída em outro:**
+
+  * O valor é definido pela faixa no **momento do pagamento**, independentemente de o ônibus sair ou chegar dentro de outra faixa.
+
+* **Bilhetes múltiplos (reserva antecipada):**
+
+  * No caso de reservas para horários futuros, o app fixa a tarifa de acordo com a faixa programada (e.g., reservar para 18:00 paga tarifa cheia, mesmo que no momento da reserva seja hora reduzida).
+
+* **Falhas de sincronização de horário:**
+
+  * O sistema backend mantém um horário-oficial (NTP); se discordar (>2 min) do relógio do dispositivo, o app alerta “Data/hora do seu telefone não está sincronizada — pode haver diferença de tarifa”.
+
+---
+
+Com esta lógica clara e transparente, o usuário compreende exatamente quanto vai pagar e o porquê, a concessionária ganha ferramenta para alocar melhor a frota e incentivar viagens fora do pico, e o sistema se torna mais justo e eficiente.
+
+16. Programa de Recompensas ("Milhas")
+Justificativa: Um sistema de pontos que recompensa deslocamentos frequentes, participação em eventos e uso de funcionalidades (reserva, feedback), criando incentivo extra para utilizar o transporte.
+Implementação: Cada viagem ou interação gera pontos convertíveis em descontos de passagem, brindes ou ingressos culturais. O saldo aparece no perfil do app.
+
+
+Feedback em Tempo Real
+Justificativa: Capturar a percepção do usuário sobre trajetos, eventos e condições de operação (atrasos, adiantamentos, panes), permitindo melhorias contínuas, redução de falhas e maior engajamento.
+Implementação:
+No app: botão para avaliar cada trajeto ou evento (estrelinhas, comentários rápidos) e opção para reportar situação específica do ônibus (por exemplo, ônibus X com atraso, adiantado ou apresentando pane).
+
+
+Nos terminais: totens com QR Codes que direcionam para o formulário de feedback online.
+
+
+Central de Operações: painel de controle para visualização em tempo real das avaliações e reports, permitindo que a concessionária tome providências imediatas (reintegração de frota, ajustes de horário, manutenção preventiva).
